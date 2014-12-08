@@ -168,12 +168,39 @@ class RecalculateDrawOrderEmpty(bpy.types.Operator):
         
         ### Deselct Everything ###
         bpy.ops.object.select_all(action='DESELECT')
-                  
+        
+        ### Unparent Objects for the empty ###
+        for i in sortedobjects:
+            bpy.context.scene.objects[i.name].select=True
+            bpy.ops.object.parent_clear(type='CLEAR')
+        
+        ### Deselct Everything ###
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        #select empty and delete it
+        scene.objects.active = bpy.context.scene.objects[tmpempty]
+        bpy.context.scene.objects[tmpempty].select=True
+        bpy.ops.object.delete()
+        
+        
+        ### Add empty and add parent selected objects to it
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        tmpempty = scene.objects.active.name
+        
+        for i in sortedobjects:
+            bpy.context.scene.objects[i.name].select=True
+        
+        bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
+        
+        
+        ### Deselct Everything ###
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        ### Select Empty ###
         scene.objects.active = bpy.context.scene.objects[tmpempty]
         bpy.context.scene.objects[tmpempty].select=True
         
         return {'FINISHED'}
-
 
 
 ################## 
