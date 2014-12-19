@@ -5,7 +5,7 @@ bl_info = {
     "version": (0, 0, 0),
     "blender": (2, 72, 2),
     "location": "Tool Shelf > Custom Tools",
-    "warning": "",
+    "warning": "Still a WIP",
     "category": "Custom"}
 
 import bpy
@@ -207,20 +207,6 @@ class RecalculateDrawOrderEmpty(bpy.types.Operator):
 # TOOLSHELF TABS #
 ##################
 
-### Import Images as Planes ###
-class GLSLTools_ImportImages_Panel(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
-    bl_category = "GLSL Tools"
-    bl_context = "objectmode"
-    bl_label = "Import Images"
-    
-    def draw(self, context):
-        layout = self.layout
-        
-        col = layout.column(align=True)
-        col.operator("import_image.to_plane")
-
 ### Recalculate Draw Order ###
 class GLSLTools_DrawOrder_Panel(Panel):
     bl_space_type = 'VIEW_3D'
@@ -257,12 +243,14 @@ class GLSLTools_Select_Camera(Panel):
 # Register/Unregister #
 #######################
 def register():
-    bpy.utils.register_class(GLSLTools_ImportImages_Panel)
+    
     bpy.utils.register_class(GLSLTools_DrawOrder_Panel)
     bpy.utils.register_class(RecalculateDrawOrder)
     bpy.utils.register_class(SelectCamera)
     bpy.utils.register_class(GLSLTools_Select_Camera)
     bpy.utils.register_class(RecalculateDrawOrderEmpty)
+    
+    
     
     
 
