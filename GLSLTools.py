@@ -57,6 +57,8 @@ class RecalculateDrawOrder(bpy.types.Operator):
         selected = bpy.context.selected_objects
         object = bpy.ops.object
         
+        draworderaxis = bpy.context.window_manager.order_axis
+        
         bpy.context.scene.camera.select = False
         
         
@@ -75,7 +77,18 @@ class RecalculateDrawOrder(bpy.types.Operator):
             print(i.name) #name
         
         ### Sort list to put objects in proper order based on Y axis location
-        sortedobjects = sorted(objects, key=lambda object: object.y_axis) #sort through list
+        if draworderaxis == '+X':
+            sortedobjects = sorted(objects, key=lambda object: object.x_axis) #sort through list
+        elif draworderaxis == '+Y':
+            sortedobjects = sorted(objects, key=lambda object: object.y_axis) #sort through list
+        elif draworderaxis == '+Z':
+            sortedobjects = sorted(objects, key=lambda object: object.z_axis) #sort through list
+        elif draworderaxis == '-X':
+            sortedobjects = sorted(objects, negative=True, key=lambda object: object.x_axis) #sort through list
+        elif draworderaxis == '-Y':
+            sortedobjects = sorted(objects, negative=True, key=lambda object: object.y_axis) #sort through list
+        elif draworderaxis == '-Z':
+            sortedobjects = sorted(objects, negative=True, key=lambda object: object.z_axis) #sort through list
         
         ### Debugging info ###
         print ("sorted") 
@@ -217,10 +230,16 @@ class GLSLTools_DrawOrder_Panel(Panel):
     
     def draw(self, context):
         layout = self.layout
-        
+        wm = context.window_manager
+          
         col = layout.column(align=True)
         col.operator("recalculate.draw_order")
         col.operator("recalculate.draw_order_empty")
+        
+        col = layout.column(align=False)
+        col.prop(wm, "order_axis")
+        
+        
 
 ### Select Camera ###    
 class GLSLTools_Select_Camera(Panel):
@@ -250,6 +269,20 @@ def register():
     bpy.utils.register_class(GLSLTools_Select_Camera)
     bpy.utils.register_class(RecalculateDrawOrderEmpty)
     
+    ### CUSTOM PROPERTIES ###
+    bpy.types.WindowManager.order_axis = bpy.props.EnumProperty(
+        name="Draw Order Axis",
+        items=(
+            ('+X', '+X', 'Positive X Axis'),
+            ('+Y', '+Y', 'Positive Y Axis'),
+            ('+Z', '+Z', 'Positive Z Axis'),
+            ('-X', '-X', 'Negative X Axis'),
+            ('-Y', '-Y', 'Negative Y Axis'),
+            ('-Z', '-Z', 'Negative Z Axis'),
+        ),
+        default='+Y'
+    )
+    
     
     
     
@@ -261,6 +294,9 @@ def unregister():
     bpy.utils.unregister_class(SelectCamera)
     bpy.utils.unregister_class(GLSLTools_Select_Camera)
     bpy.utils.unregister_class(RecalculateDrawOrderEmpty)
+    
+    del bpy.types.WindowManager.order_axis
+
 
 if __name__ == "__main__":
     register()
