@@ -84,11 +84,11 @@ class RecalculateDrawOrder(bpy.types.Operator):
         elif draworderaxis == '+Z':
             sortedobjects = sorted(objects, key=lambda object: object.z_axis) #sort through list
         elif draworderaxis == '-X':
-            sortedobjects = sorted(objects, negative=True, key=lambda object: object.x_axis) #sort through list
+            sortedobjects = sorted(objects, key=lambda object: object.x_axis, reverse=True) #sort through list
         elif draworderaxis == '-Y':
-            sortedobjects = sorted(objects, negative=True, key=lambda object: object.y_axis) #sort through list
+            sortedobjects = sorted(objects, key=lambda object: object.y_axis, reverse=True) #sort through list
         elif draworderaxis == '-Z':
-            sortedobjects = sorted(objects, negative=True, key=lambda object: object.z_axis) #sort through list
+            sortedobjects = sorted(objects, key=lambda object: object.z_axis, reverse=True) #sort through list
         
         ### Debugging info ###
         print ("sorted") 
