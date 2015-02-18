@@ -46,10 +46,19 @@ class RecalculateDrawOrder(bpy.types.Operator):
     """Recalculate the GLSL Draw Order of the selected objects"""
     bl_idname = "recalculate.draw_order"
     bl_label = "Recalculate Draw Order"
-
+    
+    use_empty = bpy.props.BoolProperty(name="use empty")
+    
+        
     @classmethod
     def poll(cls, context):
-        return context.active_object is not None
+        if bpy.context.scene.camera != False:
+            if bpy.context.selected_objects != False:
+                if len(bpy.context.selected_objects) > 1:
+                    if bpy.context.camera.select == True:
+                        return
+                else:
+                    return
 
     def execute(self, context):
         ### Convinience Vars ###
@@ -117,101 +126,26 @@ class RecalculateDrawOrder(bpy.types.Operator):
         ### Deselct Everything ###
         bpy.ops.object.select_all(action='DESELECT')
         
-        #select empty and delete it
-        scene.objects.active = bpy.context.scene.objects[tmpempty]
-        bpy.context.scene.objects[tmpempty].select=True
-        bpy.ops.object.delete()
+        if self.use_empty == True:
+            for i in sortedobjects:
+                bpy.context.scene.objects[i.name].select=True
+            
+            bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
+            
+            bpy.ops.object.select_all(action='DESELECT')
+            
+            scene.objects.active = bpy.context.scene.objects[tmpempty]
+            bpy.context.scene.objects[tmpempty].select=True
+        else:
+            #select empty and delete it
+            scene.objects.active = bpy.context.scene.objects[tmpempty]
+            bpy.context.scene.objects[tmpempty].select=True
+            bpy.ops.object.delete()
+            
+            ### Select Camera ###
+            #bpy.ops.object.select_all(action='SELECT')
+            bpy.ops.select.camera()
         
-        ### Select Camera ###
-        #bpy.ops.object.select_all(action='SELECT')
-        bpy.ops.select.camera()
-        
-        return {'FINISHED'}
-
-
-### Recalculate Draw Order and Parent to an Empty ###
-class RecalculateDrawOrderEmpty(bpy.types.Operator):
-    """Recalculate the GLSL Draw Order of the selected objects and Parent to an Empty"""
-    bl_idname = "recalculate.draw_order_empty"
-    bl_label = "Recalculate Draw Order to Empty"
-
-    @classmethod
-    def poll(cls, context):
-        return context.active_object is not None
-
-    def execute(self, context):
-        ### Convinience Vars ###
-        scene = bpy.context.scene
-        selected = bpy.context.selected_objects
-        object = bpy.ops.object
-        
-        
-        ### A list to contain the selected objects
-        objects = []        
-        
-        ### Loop through selected objets and add them to the list
-        for obj in selected:
-            scene.objects.active = obj
-
-            objects.append(DrawOrderObjects(obj.location.x, obj.location.y, obj.location.z, obj.name))
-        
-        ### Debugging info ###
-        for i in objects: #print name and y axis location of each of the objects for debugging
-            print(i.y_axis) #y axis
-            print(i.name) #name
-        
-        ### Sort list to put objects in proper order based on Y axis location
-        sortedobjects = sorted(objects, key=lambda object: object.y_axis) #sort through list
-        
-        ### Debugging info ###
-        print ("sorted") 
-        for i in sortedobjects: #print name and y axis location of each of the objects for debugging
-            print(i.y_axis) #y axis
-            print(i.name) #name
-        
-        ### Add empty and add parent selected objects to it
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
-        tmpempty = scene.objects.active.name
-        
-        for i in sortedobjects:
-            bpy.context.scene.objects[i.name].select=True
-        
-        bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
-        
-        
-        ### Deselct Everything ###
-        bpy.ops.object.select_all(action='DESELECT')
-        
-        ### Unparent Objects for the empty ###
-        for i in sortedobjects:
-            bpy.context.scene.objects[i.name].select=True
-            bpy.ops.object.parent_clear(type='CLEAR')
-        
-        ### Deselct Everything ###
-        bpy.ops.object.select_all(action='DESELECT')
-        
-        #select empty and delete it
-        scene.objects.active = bpy.context.scene.objects[tmpempty]
-        bpy.context.scene.objects[tmpempty].select=True
-        bpy.ops.object.delete()
-        
-        
-        ### Add empty and add parent selected objects to it
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
-        tmpempty = scene.objects.active.name
-        
-        for i in sortedobjects:
-            bpy.context.scene.objects[i.name].select=True
-        
-        bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
-        
-        
-        ### Deselct Everything ###
-        bpy.ops.object.select_all(action='DESELECT')
-        
-        ### Select Empty ###
-        scene.objects.active = bpy.context.scene.objects[tmpempty]
-        bpy.context.scene.objects[tmpempty].select=True
         
         return {'FINISHED'}
 
@@ -233,8 +167,8 @@ class GLSLTools_DrawOrder_Panel(Panel):
         wm = context.window_manager
           
         col = layout.column(align=True)
-        col.operator("recalculate.draw_order")
-        col.operator("recalculate.draw_order_empty")
+        col.operator("recalculate.draw_order").use_empty=False
+        col.operator("recalculate.draw_order").use_empty=True
         
         col = layout.column(align=False)
         col.prop(wm, "order_axis")
@@ -267,7 +201,6 @@ def register():
     bpy.utils.register_class(RecalculateDrawOrder)
     bpy.utils.register_class(SelectCamera)
     bpy.utils.register_class(GLSLTools_Select_Camera)
-    bpy.utils.register_class(RecalculateDrawOrderEmpty)
     
     ### CUSTOM PROPERTIES ###
     bpy.types.WindowManager.order_axis = bpy.props.EnumProperty(
@@ -282,10 +215,6 @@ def register():
         ),
         default='+Y'
     )
-    
-    
-    
-    
 
 def unregister():
     bpy.utils.unregister_class(GLSLTools)
@@ -293,7 +222,6 @@ def unregister():
     bpy.utils.unregister_class(RecalculateDrawOrder)
     bpy.utils.unregister_class(SelectCamera)
     bpy.utils.unregister_class(GLSLTools_Select_Camera)
-    bpy.utils.unregister_class(RecalculateDrawOrderEmpty)
     
     del bpy.types.WindowManager.order_axis
 
