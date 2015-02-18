@@ -49,7 +49,11 @@ class RecalculateDrawOrder(bpy.types.Operator):
     
     use_empty = bpy.props.BoolProperty(name="use empty")
     
-        
+    
+    ##### POLL METHOD #####
+    ### Defines When operator can be used ###
+    # If there is a camera, and more than two objects #
+    # (not including the camera) are selected, it can be run #
     @classmethod
     def poll(cls, context):
         if bpy.context.scene.camera != False:
@@ -65,12 +69,12 @@ class RecalculateDrawOrder(bpy.types.Operator):
         scene = bpy.context.scene
         selected = bpy.context.selected_objects
         object = bpy.ops.object
-        
         draworderaxis = bpy.context.window_manager.order_axis
         
+        
+        ### Deselect Camera ###
         bpy.context.scene.camera.select = False
-        
-        
+                
         ### A list to contain the selected objects
         objects = []        
         
@@ -85,19 +89,19 @@ class RecalculateDrawOrder(bpy.types.Operator):
             print(i.y_axis) #y axis
             print(i.name) #name
         
-        ### Sort list to put objects in proper order based on Y axis location
+        ### Sort by Axis specified by custom draworderaxis enum prop ###
         if draworderaxis == '+X':
-            sortedobjects = sorted(objects, key=lambda object: object.x_axis) #sort through list
+            sortedobjects = sorted(objects, key=lambda object: object.x_axis)
         elif draworderaxis == '+Y':
-            sortedobjects = sorted(objects, key=lambda object: object.y_axis) #sort through list
+            sortedobjects = sorted(objects, key=lambda object: object.y_axis)
         elif draworderaxis == '+Z':
-            sortedobjects = sorted(objects, key=lambda object: object.z_axis) #sort through list
+            sortedobjects = sorted(objects, key=lambda object: object.z_axis)
         elif draworderaxis == '-X':
-            sortedobjects = sorted(objects, key=lambda object: object.x_axis, reverse=True) #sort through list
+            sortedobjects = sorted(objects, key=lambda object: object.x_axis, reverse=True)
         elif draworderaxis == '-Y':
-            sortedobjects = sorted(objects, key=lambda object: object.y_axis, reverse=True) #sort through list
+            sortedobjects = sorted(objects, key=lambda object: object.y_axis, reverse=True)
         elif draworderaxis == '-Z':
-            sortedobjects = sorted(objects, key=lambda object: object.z_axis, reverse=True) #sort through list
+            sortedobjects = sorted(objects, key=lambda object: object.z_axis, reverse=True)
         
         ### Debugging info ###
         print ("sorted") 
